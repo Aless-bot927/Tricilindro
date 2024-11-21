@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cálculo y Gráfica del Tricilindro</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #463ded;
+        }
+        .container {
+            text-align: center;
+            background-color: #d8e6d3;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .container h1 {
+            font-size: 24px;
+        }
+        .container input, .container button {
+            padding: 10px;
+            margin: 10px;
+            font-size: 16px;
+        }
+        .result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        #grafica {
+            margin-top: 20px;
+            width: 400px;
+            height: 400px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Volumen del Tricilindro</h1>
+        <p>Ingresa el valor del radio:</p>
+        <input type="number" id="radio" placeholder="Radio (r)" step="any">
+        <button onclick="calcularVolumen()">Calcular Volumen</button>
+        <p class="result" id="resultado"></p>
+        <div id="grafica"></div>
+    </div>
+
+    <!-- Incluye Three.js desde el CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        function calcularVolumen() {
+            const radio = parseFloat(document.getElementById("radio").value);
+
+            if (isNaN(radio) || radio <= 0) {
+                document.getElementById("resultado").innerText = "Por favor ingresa un valor válido para el radio.";
+                return;
+            }
+
+            // Fórmula para calcular el volumen del tricilindro
+            const volumen = 8 * (2 - (3 * Math.sqrt(2) / 4)) * Math.pow(radio, 3);
+            document.getElementById("resultado").innerText = `El volumen del tricilindro es aproximadamente: ${volumen.toFixed(3)}`;
+
+            // Llamar a la función para mostrar la gráfica en 3D
+            mostrarGrafica(radio);
+        }
+
+        function mostrarGrafica(radio) {
+            // Limpiar el contenedor gráfico si ya existe un renderizado previo
+            const grafica = document.getElementById("grafica");
+            grafica.innerHTML = "";
+
+            // Crear la escena 3D
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, grafica.clientWidth / grafica.clientHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer();
+            renderer.setSize(grafica.clientWidth, grafica.clientHeight);
+            grafica.appendChild(renderer.domElement);
+
+            // Material semitransparente para ver la intersección de los cilindros
+            const material = new THREE.MeshStandardMaterial({
+                color: 0x0077ff,
+                transparent: true,
+                opacity: 0.5,
+                side: THREE.DoubleSide
+            });
+
+            // Crear tres cilindros y añadirlos a la escena
+            const geometry = new THREE.CylinderGeometry(radio, radio, 2 * radio, 32);
+
+            const cylinder1 = new THREE.Mesh(geometry, material);
+            cylinder1.rotation.z = Math.PI / 2;
+            scene.add(cylinder1);
+
+            const cylinder2 = new THREE.Mesh(geometry, material);
+            cylinder2.rotation.x = Math.PI / 2;
+            scene.add(cylinder2);
+
+            const cylinder3 = new THREE.Mesh(geometry, material);
+            scene.add(cylinder3);
+
+            // Configurar la cámara y las luces
+            camera.position.z = 3 * radio;
+            const light = new THREE.PointLight(0xffffff, 1);
+            light.position.set(10, 10, 10);
+            scene.add(light);
+
+            const ambientLight = new THREE.AmbientLight(0x404040); // luz ambiental suave
+            scene.add(ambientLight);
+
+            // Función de animación para rotar la figura
+            function animate() {
+                requestAnimationFrame(animate);
+                cylinder1.rotation.y += 0.01;
+                cylinder2.rotation.y += 0.01;
+                cylinder3.rotation.y += 0.01;
+                renderer.render(scene, camera);
+            }
+            animate();
+        }
+    </script>
+</body>
+</html>
+
+ 
